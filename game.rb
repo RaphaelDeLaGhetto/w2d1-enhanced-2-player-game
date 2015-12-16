@@ -19,23 +19,34 @@ class Game
   end
 
   def play
+    old_question = nil
     loop do
       break if @players[0].lives == 0 || @players[1].lives == 0 
       @index = @index % (@players.count)
-      values_for_turn = generate_question
 
-      print "\n#{prompt_player_for_answer(values_for_turn)} "
-      answer = gets.chomp.to_i
+      values_for_turn = old_question.nil? ? generate_question : old_question
 
-      if verify_answer(answer, values_for_turn) 
-        @players[@index].points += 1
-      else
-        @players[@index].lives -= 1
-        puts "WRONG!"
-        puts "#{@players[0].name} has #{@players[0].points} points"
-        puts "#{@players[1].name} has #{@players[1].points} points"
+      begin
+        print "\n#{prompt_player_for_answer(values_for_turn)} "
+
+        # This throws the ArgumentError if the given value can't be made into
+        # an integer
+        answer = Integer(gets.chomp)
+
+        if verify_answer(answer, values_for_turn) 
+          @players[@index].points += 1
+        else
+          @players[@index].lives -= 1
+          puts "WRONG!"
+          puts "#{@players[0].name} has #{@players[0].points} points"
+          puts "#{@players[1].name} has #{@players[1].points} points"
+        end
+        @index += 1
+        old_question = nil
+      rescue ArgumentError => e
+        puts "That is not a number! Try again..."
+        old_question = values_for_turn
       end
-      @index += 1
     end
 
     puts "\n#{@players[0].points > @players[1].points ? @players[0].name : @players[1].name} wins!"
