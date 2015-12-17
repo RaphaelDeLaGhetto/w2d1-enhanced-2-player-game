@@ -1,7 +1,15 @@
+
+class InvalidGuessError < StandardError
+end
+
+class BlankNameError < StandardError
+end
+
 class Player
   attr_accessor :name, :lives, :points
 
-  def initialize(name)
+  def initialize(name='')
+    raise BlankNameError, 'Name cannot be blank' if name.empty?
     @name = name
     @lives = 3
     @points = 0
@@ -12,10 +20,21 @@ class Game
 
   def initialize
     @players = []
-    @players << Player.new('Player 1')
-    @players << Player.new('Player 2')
     @index = 0
     @values = (1..20).to_a
+  end
+
+  def register_players
+    player_num = 1 
+    while @players.count < 2
+      begin
+        print "Player #{player_num}, enter your name: "
+        @players << Player.new(gets.chomp)
+        player_num += 1 
+      rescue Exception => msg
+        puts msg 
+      end
+    end
   end
 
   def play
@@ -49,7 +68,7 @@ class Game
       end
     end
 
-    puts "\n#{@players[0].points > @players[1].points ? @players[0].name : @players[1].name} wins!"
+    puts @players[0].points == @players[1].points ? 'You tied' :  "\n#{@players[0].points > @players[1].points ? @players[0].name : @players[1].name} wins!"
   end
 
   private
@@ -69,5 +88,6 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   game = Game.new
+  game.register_players
   game.play
 end
